@@ -1,36 +1,40 @@
-
 import { GoogleGenAI } from '@google/genai';
 
-export default async function handler(req, res) {
-  // 1. Handle CORS (Cross-Origin Resource Sharing)
-  // This allows your frontend to talk to this backend function
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+export const config = {
+  runtime: 'edge',
+};
 
-  // Handle preflight request (browser checking if it's safe to send data)
+export default async function handler(req) {
+  // CORS Handling for Edge
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
   }
 
-  // Only allow POST requests
   if (req.method !== 'POST') {
-     return res.status(405).json({ error: 'Method Not Allowed' });
+    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
+        status: 405,
+        headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   try {
-    const { model, prompt, config } = req.body;
+    const { model, prompt, config } = await req.json();
 
-    // Load API Key from Vercel Environment Variables
+    // Check for API Key
     const apiKey = process.env.API_KEY;
-
     if (!apiKey) {
-        return res.status(500).json({ error: 'Server API Key not configured' });
+        console.error("API_KEY environment variable is missing.");
+        return new Response(JSON.stringify({ error: 'Server configuration error: API Key missing' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+        });
     }
 
     const ai = new GoogleGenAI({ apiKey });
@@ -42,11 +46,19 @@ export default async function handler(req, res) {
       config: config || {}
     });
 
-    // Return the text
-    return res.status(200).json({ text: response.text });
+    return new Response(JSON.stringify({ text: response.text }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      }
+    });
 
   } catch (error) {
     console.error('Gemini API Error:', error);
-    return res.status(500).json({ error: 'Failed to generate content', details: error.message });
+    return new Response(JSON.stringify({ error: 'Failed to generate content', details: error.message }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
   }
 }

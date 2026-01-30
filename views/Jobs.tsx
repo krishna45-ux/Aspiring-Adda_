@@ -3,7 +3,6 @@ import { Search, X, Heart, ExternalLink, MapPin, Building2, Briefcase, Filter } 
 import { useApp } from '../AppContext';
 import { AVAILABLE_SKILLS, SPECIALIZATIONS } from '../constants';
 import { Job } from '../types';
-import Button from '../components/Button';
 
 const LOCATIONS = ["Bangalore", "Remote", "Hyderabad", "Pune", "Gurgaon", "Mumbai", "Noida", "Chennai"];
 
@@ -20,7 +19,6 @@ const Jobs: React.FC = () => {
 
   const isSavedView = view === 'saved';
 
-  // --- DATA GENERATION (Unchanged Logic) ---
   const allJobs: Job[] = useMemo(() => {
     const jobs: Job[] = [];
     const bgs = ["bg-blue-500", "bg-emerald-500", "bg-black", "bg-rose-500", "bg-purple-500", "bg-orange-500"];
@@ -119,7 +117,7 @@ const Jobs: React.FC = () => {
                 )}
             </div>
 
-            {/* Filter Scrollers Container - No overflow on main page */}
+            {/* Filter Scrollers Container */}
             {!isSavedView && (
                 <div className="flex flex-col gap-4">
                     {/* Skills Row */}
@@ -241,7 +239,7 @@ const Jobs: React.FC = () => {
                         </button>
                     </div>
 
-                    {/* Meta Tags (Mobile Only: Location shown here if space tight above) */}
+                    {/* Meta Tags (Mobile Only) */}
                     <div className="flex md:hidden items-center gap-3 text-[10px] font-bold text-zinc-500 border-b-2 border-black/5 pb-2 dark:border-white/5 dark:text-zinc-400">
                         <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {job.loc}</span>
                         <span className="flex items-center gap-1"><Briefcase className="w-3 h-3" /> {job.experience}</span>
